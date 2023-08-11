@@ -1,0 +1,37 @@
+Верхние уровни:
+
+User, UserSetting, Channel
+
+Channel <- Telegram / SMS / Email
+User    <- UserSetting
+
+Включаем сюда также интерфейс UserSettingInterface для доступа к БД, включающие методы:
+public static function setSetting(User $user, UserSetting $userSetting);
+public static function getSetting(User $user, UserSetting $userSetting);
+Эти методы могли бы использоваться классом User для получения состояния его настройки (настроек)
+
+Низкие уровни:
+
+Класс запросов в БД, реализующий интерфейс UserSettingInterface
+
+Можно было бы выделить также интерфейс, наследуемый от UserSettingInterface <- UserSettingRequestInterface
+
+Также содержит низкоуровневые абстракции, например, Language (как настройку), 
+включающее свойства:
+private $name;
+private $value;
+private $channel;
+private $code;
+и методы set и get;
+
+Структура БД:
+
+Таблица: user_settings
+Описание: содержит текущие настройки для пользователей
+Поля: id, user_id, setting_name, setting_value
+( где setting_name - имя настройки, setting_value - текущее значение настройки )
+
+Таблица: user_settings_requests
+Описание: содержит историю запросов на изменение настроек
+Поля: id, user_setting_id, channel_name, new_setting_value, code, code_expired_at
+( где user_setting_id - связан внешним ключом с user_setting, channel_name - способ изменения настройки (SMS, TELEGRAM, EMAIL), new_setting_value - новое запрашиваемое значение настройки,code - сгенерированный код, code_expired_at - дата прекращения действия кода )
