@@ -68,6 +68,7 @@ if (isset($_POST['setting']['name']) && $_POST['setting']['value'] && $_POST['ch
 
     // Если ее в базе нет - стоп скрипт
     if (!mysqli_num_rows($result)) {
+        close();
         die('Setting does not exist');
     }
 
@@ -75,12 +76,18 @@ if (isset($_POST['setting']['name']) && $_POST['setting']['value'] && $_POST['ch
 
     // Если значение найденной настройки совпадает с запрошенной - стоп скрипт
     if ($row['value'] == $settingValue) {
+        close();
         die('Attempt to change an existing setting');
     }
 
     // Генерируем код, добавляем запись в историю на изменение настройки в таблицу историй изменений с записью времени окончания подтверждения
 
     $code = generateCode();
+
+    if (!sendCodeViaChannel($code, $channelName)) {
+        close();
+        die("Error sending code'");
+    }
 
     $userSettingId = $row['id'];
     $codeExpiredAt = date('Y-m-d H:i:s', strtotime('+5 minutes'));
@@ -127,6 +134,7 @@ if (isset($_POST['code']) && $_POST['user']['setting']['id'] && $_POST['channel'
     $result = query($sql);
 
     if (!mysqli_num_rows($result)) {
+        close();
         die('Validation error');
     }
 
@@ -178,7 +186,7 @@ function generateCode(): string
     return '';
 }
 
-function sendCodeViaChannel($channel): bool
+function sendCodeViaChannel($code, $channelName): bool
 {
     return true;
 }
